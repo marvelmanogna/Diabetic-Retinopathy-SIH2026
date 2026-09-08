@@ -1,0 +1,24 @@
+DIABETIC RETINOPATHY SCREENING REPORT
+========================================
+IMAGE QUALITY
+Status: ACCEPT
+
+DR CLASSIFICATION
+Grade: 2
+Category: Moderate DR
+
+REFERABLE DR
+YES - Human review recommended.
+
+MODEL SCORE
+0.7333
+
+EXPLAINABILITY
+Grad-CAM generated: YES
+
+STRUCTURAL EVIDENCE
+Candidate optic disc detected.
+
+DISCLAIMER
+This software is a research prototype for screening support and is not a medical diagnostic device.
+Results should be reviewed by a qualified healthcare professional.

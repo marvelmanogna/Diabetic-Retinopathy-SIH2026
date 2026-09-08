@@ -1,0 +1,21 @@
+# Large dataset
+data/
+
+# Generated results
+results/
+
+# MATLAB temporary files
+*.asv
+*.autosave
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Environment files
+venv/
+.venv/
+
+# Operating system files
+.DS_Store
+Thumbs.db
