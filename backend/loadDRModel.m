@@ -1,18 +1,32 @@
 function [net,classNames,inputSize] = loadDRModel()
 
-modelPath = "D:\projects\SIH_2026\DR_Screening_SIH\results\model/drModel.mat";
+    % Find the folder where this function is located
+    backendFolder = fileparts(mfilename("fullpath"));
 
-if ~isfile(modelPath)
+    % Move one level up to project root
+    projectRoot = fileparts(backendFolder);
 
-    error("Trained DR model was not found: %s", ...
-        modelPath);
+    % Model location
+    modelPath = fullfile( ...
+        projectRoot, ...
+        "results", ...
+        "model", ...
+        "drModel.mat");
 
-end
+    % Check whether model exists
+    if ~isfile(modelPath)
 
-data = load(modelPath);
+        error( ...
+            "Trained DR model was not found here:\n%s\n\nTrain the model first.", ...
+            modelPath);
 
-net = data.trainedNet;
-classNames = data.classNames;
-inputSize = data.inputSize;
+    end
+
+    % Load model
+    data = load(modelPath);
+
+    net = data.trainedNet;
+    classNames = data.classNames;
+    inputSize = data.inputSize;
 
 end

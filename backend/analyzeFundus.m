@@ -1,91 +1,102 @@
 function result = analyzeFundus(img)
 
-%% =========================================================
-% 1. IMAGE QUALITY
-% =========================================================
+    % =========================================================
+    % COMPLETE FUNDUS IMAGE ANALYSIS
+    % =========================================================
 
-result.quality = assessQuality(img);
+    % ---------------------------------------------------------
+    % 1. IMAGE QUALITY
+    % ---------------------------------------------------------
 
-%% =========================================================
-% 2. STOP IF IMAGE IS UNGRADABLE
-% =========================================================
+    result.quality = assessQuality(img);
 
-if result.quality.status == "RECAPTURE"
 
-    result.status = "RECAPTURE";
+    % ---------------------------------------------------------
+    % 2. STOP IF IMAGE QUALITY IS POOR
+    % ---------------------------------------------------------
 
-    result.message = ...
-        "Image quality is insufficient. Please capture another image.";
+    if result.quality.status == "RECAPTURE"
 
-    return;
+        result.status = "RECAPTURE";
 
-end
+        result.message = ...
+            "Image quality is insufficient. Please capture another image.";
 
-%% =========================================================
-% 3. LOAD MODEL
-% =========================================================
+        return;
 
-[net,classNames,inputSize] = loadDRModel();
+    end
 
-%% =========================================================
-% 4. DR PREDICTION
-% =========================================================
 
-result.prediction = predictDR( ...
-    img, ...
-    net, ...
-    classNames);
+    % ---------------------------------------------------------
+    % 3. LOAD AI MODEL
+    % ---------------------------------------------------------
 
-%% =========================================================
-% 5. PREPROCESS
-% =========================================================
+    [net,classNames,inputSize] = loadDRModel();
 
-processed = preprocessFundusColor(img);
 
-result.processedImage = processed;
+    % ---------------------------------------------------------
+    % 4. DR CLASSIFICATION
+    % ---------------------------------------------------------
 
-%% =========================================================
-% 6. GRAD-CAM
-% =========================================================
+    result.prediction = ...
+        predictDR(img,net,classNames);
 
-X = single(processed);
 
-scores = predict(net,X);
+    % ---------------------------------------------------------
+    % 5. PREPROCESS IMAGE
+    % ---------------------------------------------------------
 
-scores = extractdata(scores);
+    processed = preprocessFundusColor(img);
 
-scores = squeeze(scores);
+    result.processedImage = processed;
 
-[~,classIndex] = max(scores);
 
-result.gradCAM = gradCAM( ...
-    net, ...
-    X, ...
-    classIndex);
+    % ---------------------------------------------------------
+    % 6. GRAD-CAM
+    % ---------------------------------------------------------
 
-%% =========================================================
-% 7. VESSEL ANALYSIS
-% =========================================================
+    X = single(processed);
 
-result.vessels = segmentVessels(img);
+    scores = predict(net,X);
 
-%% =========================================================
-% 8. OPTIC DISC
-% =========================================================
+    scores = extractdata(scores);
 
-result.opticDisc = detectOpticDisc(img);
+    scores = squeeze(scores);
 
-%% =========================================================
-% 9. LESION CANDIDATES
-% =========================================================
+    [~,classIndex] = max(scores);
 
-result.lesionEvidence = ...
-    detectLesionCandidates(img);
+    result.gradCAM = ...
+        gradCAM(net,X,classIndex);
 
-%% =========================================================
-% 10. FINAL STATUS
-% =========================================================
 
-result.status = "ANALYZED";
+    % ---------------------------------------------------------
+    % 7. VESSEL SEGMENTATION
+    % ---------------------------------------------------------
+
+    result.vessels = ...
+        segmentVessels(img);
+
+
+    % ---------------------------------------------------------
+    % 8. OPTIC DISC
+    % ---------------------------------------------------------
+
+    result.opticDisc = ...
+        detectOpticDisc(img);
+
+
+    % ---------------------------------------------------------
+    % 9. LESION CANDIDATES
+    % ---------------------------------------------------------
+
+    result.lesionEvidence = ...
+        detectLesionCandidates(img);
+
+
+    % ---------------------------------------------------------
+    % 10. FINAL STATUS
+    % ---------------------------------------------------------
+
+    result.status = "ANALYZED";
 
 end

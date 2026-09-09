@@ -1,18 +1,40 @@
 function result = assessQuality(img)
 
-    % ==========================================
-    % CONVERT IMAGE
-    % ==========================================
+    % =========================================================
+    % IMAGE QUALITY ASSESSMENT
+    % =========================================================
+
+    % Check that an image was supplied
+    if nargin < 1
+        error("assessQuality requires an input image.");
+    end
+
+
+    % =========================================================
+    % 1. CONVERT IMAGE TO DOUBLE
+    % =========================================================
 
     img = im2double(img);
 
-    % Convert RGB to grayscale
-    gray = rgb2gray(img);
+
+    % =========================================================
+    % 2. CONVERT TO GRAYSCALE
+    % =========================================================
+
+    if size(img,3) == 3
+
+        gray = rgb2gray(img);
+
+    else
+
+        gray = img;
+
+    end
 
 
-    % ==========================================
-    % 1. BRIGHTNESS CHECK
-    % ==========================================
+    % =========================================================
+    % 3. BRIGHTNESS CHECK
+    % =========================================================
 
     meanBrightness = mean(gray(:));
 
@@ -21,64 +43,65 @@ function result = assessQuality(img)
         meanBrightness <= 0.80;
 
 
-    % ==========================================
-    % 2. FOCUS / BLUR CHECK
-    % ==========================================
+    % =========================================================
+    % 4. FOCUS / BLUR CHECK
+    % =========================================================
 
-    [Gx, Gy] = imgradientxy(gray);
+    [Gx,Gy] = imgradientxy(gray);
 
-    gradientMagnitude = sqrt(Gx.^2 + Gy.^2);
+    gradientMagnitude = ...
+        sqrt(Gx.^2 + Gy.^2);
 
-    focusScore = var(gradientMagnitude(:));
+    focusScore = ...
+        var(gradientMagnitude(:));
 
-    % Initial prototype threshold
     focusOK = focusScore > 0.001;
 
 
-    % ==========================================
-    % 3. FIELD OF VIEW CHECK
-    % ==========================================
+    % =========================================================
+    % 5. FIELD OF VIEW CHECK
+    % =========================================================
 
     retinaMask = gray > 0.05;
 
     fovPercentage = ...
         100 * nnz(retinaMask) / numel(retinaMask);
 
-    % Initial prototype threshold
     fovOK = fovPercentage > 20;
 
 
-    % ==========================================
-    % 4. GENERATE QUALITY REASONS
-    % ==========================================
+    % =========================================================
+    % 6. COLLECT REASONS
+    % =========================================================
 
     reasons = strings(0);
 
-    % Check brightness
+
     if ~brightnessOK
 
         if meanBrightness < 0.20
 
-            reasons(end+1) = "Image is too dark";
+            reasons(end+1) = ...
+                "Image is too dark";
 
         elseif meanBrightness > 0.80
 
-            reasons(end+1) = "Image is too bright";
+            reasons(end+1) = ...
+                "Image is too bright";
 
         end
 
     end
 
 
-    % Check focus
     if ~focusOK
 
-        reasons(end+1) = "Image may be blurred";
+        reasons(end+1) = ...
+            "Image may be blurred";
 
     end
 
 
-    % Check field of view
     if ~fovOK
 
         reasons(end+1) = ...
@@ -87,56 +110,24 @@ function result = assessQuality(img)
     end
 
 
-        % ==========================================
-    % QUALITY DECISION
-    % ==========================================
-
-    brightnessOK = ...
-        meanBrightness >= 0.20 && ...
-        meanBrightness <= 0.80;
-
-    focusOK = focusScore > 0.001;
-
-    fovOK = fovPercentage > 20;
-
-    % ==========================================
-    % GENERATE REASONS
-    % ==========================================
-
-    reasons = strings(0);
-
-    if ~brightnessOK
-
-        if meanBrightness < 0.20
-            reasons(end+1) = "Image is too dark";
-        else
-            reasons(end+1) = "Image is too bright";
-        end
-
-    end
-
-    if ~focusOK
-        reasons(end+1) = "Image may be blurred";
-    end
-
-    if ~fovOK
-        reasons(end+1) = "Insufficient retinal field of view";
-    end
-
-    % ==========================================
-    % FINAL DECISION
-    % ==========================================
+    % =========================================================
+    % 7. FINAL DECISION
+    % =========================================================
 
     if brightnessOK && focusOK && fovOK
+
         status = "ACCEPT";
+
     else
+
         status = "RECAPTURE";
+
     end
 
 
-    % ==========================================
-    % 6. STORE RESULTS
-    % ==========================================
+    % =========================================================
+    % 8. CREATE RESULT STRUCTURE
+    % =========================================================
 
     result.meanBrightness = meanBrightness;
 

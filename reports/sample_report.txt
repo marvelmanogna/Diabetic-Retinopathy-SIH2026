@@ -11,7 +11,7 @@ REFERABLE DR
 YES - Human review recommended.
 
 MODEL SCORE
-0.7333
+0.8700
 
 EXPLAINABILITY
 Grad-CAM generated: YES
